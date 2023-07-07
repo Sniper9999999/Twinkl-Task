@@ -65,6 +65,31 @@ print(f'p-value: {pval:.3f}')
 print(f'ci 95% for popup_1 group: [{lower_con:.3f}, {upper_con:.3f}]')
 print(f'ci 95% for popup_2 group: [{lower_treat:.3f}, {upper_treat:.3f}]')
 
+# calculate the action rate 
+
+df['Click'] = df['click_yes'] + df['click_no']
+popup_1_c = df[df['group'] == 'popup_1']
+popup_2_c = df[df['group'] == 'popup_2']
+ab_test = pd.concat([popup_1_c, popup_2_c], axis=0)
+ab_test.reset_index(drop=True, inplace=True)
+ab_test['group'].value_counts()
+
+CTR_c = ab_test.groupby('group')['Click']
+std_p = lambda x: np.std(x, ddof=0)          
+se_p = lambda x: stats.sem(x, ddof=0)  
+CTR_c = CTR_c.agg([np.mean, se_p])
+CTR_c.columns = ['CRT_c', 'std_error']
+
+popup_1_results_c = ab_test[ab_test['group'] == 'popup_1']['Click']
+popup_2_results_c = ab_test[ab_test['group'] == 'popup_2']['Click']
+n_con_c = popup_1_results_c.count()
+n_treat_c = popup_2_results_c.count()
+successes_c = [popup_1_results_c.sum(), popup_2_results_c.sum()]
+nobs_c = [n_con_c, n_treat_c]
+
+z_stat_c, pval_c = proportions_ztest(successes_c, nobs=nobs_c)
+(lower_con_c, lower_treat_c), (upper_con_c, upper_treat_c) = proportion_confint(successes_c, nobs=nobs_c, alpha=0.05)
+
 
 # Segment Analysis
 
@@ -175,3 +200,7 @@ print("Cluster Labels:", clusters)
 print("Cluster Centroids:")
 for i, centroid in enumerate(centroids):
     print(f"Cluster {i+1}: {centroid}")
+
+# calculate the counts of each clusters
+quantity = pd.Series(km.labels_).value_counts()
+

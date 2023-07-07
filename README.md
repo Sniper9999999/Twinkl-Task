@@ -11,7 +11,7 @@ df = pd.read_csv('twinkl_ab_data.csv')
 
 df.head()
 
-# conduct A/B test
+# Conduct A/B test
 popup_1 = df[df['group'] == 'popup_1']
 popup_2 = df[df['group'] == 'popup_2']
 
